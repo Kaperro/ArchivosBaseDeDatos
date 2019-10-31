@@ -1,0 +1,80 @@
+﻿@model IEnumerable<ArchivosBaseDeDatos.Models.Entities.Documento>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+    <h1>
+        @ViewData["Departamento"]
+    </h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+
+<div id="data_table">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        Id
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Nombre)
+                    </th>
+                    <th>
+                        Descargar
+                    </th>
+                    <th>
+                        Creado
+                    </th>
+                    <th>
+                        Revisado
+                    </th>
+                    <th>
+                        Usuario
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Id)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Nombre)
+                    </td>
+                    <td>
+                        <a asp-action="Download" asp-route-id="@item.Id" class="btn btn-outline-success">@item.ArchivoNombre</a>
+                    </td>
+                    <td>
+                        @item.FechaCreado
+                    </td>
+                    <td>
+                        @item.FechaRevisado
+                    </td>
+                    <td>
+                        @item.Usuario
+                    </td>
+                    <td>
+                        <a asp-action="Check" asp-route-id="@item.Id">Marcar</a> |
+                        <a asp-action="Transfer" asp-route-id="@item.Id">Transferir</a> |
+                        <a asp-action="Log" asp-route-id="@item.Id">Historial</a>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/documentos.js"></script>
+}
