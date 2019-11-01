@@ -19,7 +19,10 @@
                     Revisado
                 </th>
                 <th>
-                    Usuario
+                    Dueño
+                </th>
+                <th>
+                    Soy Destinatario?
                 </th>
                 <th></th>
             </tr>
@@ -45,6 +48,12 @@
                 </td>
                 <td>
                     @item.Usuario
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Destinatario))
+                    {
+                        <p>Si</p>
+                    }
                 </td>
                 <td>
                     <a asp-action="Check" asp-route-id="@item.Id">Marcar</a> |

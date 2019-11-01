@@ -36,7 +36,7 @@ namespace ArchivosBaseDeDatos.Models
                     .HasMaxLength(50);
 
                 entity.Property(e => e.Departamento)
-                    .IsRequired();
+                    .IsRequired(false);
 
                 entity.Property(e => e.Nombre)
                     .IsRequired()
@@ -45,16 +45,24 @@ namespace ArchivosBaseDeDatos.Models
                 entity.Property(e => e.Usuario)
                     .IsRequired()
                     .HasMaxLength(256);
+
+                entity.Property(e => e.Destinatario)
+                    .IsRequired(false)
+                    .HasMaxLength(256);
             });
 
             modelBuilder.Entity<DocumentoRegistro>(entity =>
             {
                 entity.Property(e => e.Departamento)
-                    .IsRequired()
+                    .IsRequired(false)
                     .HasMaxLength(256);
 
                 entity.Property(e => e.Usuario)
                     .IsRequired()
+                    .HasMaxLength(256);
+
+                entity.Property(e => e.Destinatario)
+                    .IsRequired(false)
                     .HasMaxLength(256);
 
                 entity.HasOne(d => d.DocumentoNavigation)

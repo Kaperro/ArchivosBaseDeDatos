@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ArchivosBaseDeDatos.Areas.Identity.Data;
 using ArchivosBaseDeDatos.Hubs;
 using ArchivosBaseDeDatos.Models;
 using ArchivosBaseDeDatos.Models.Entities;
+using ArchivosBaseDeDatos.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -43,7 +46,7 @@ namespace ArchivosBaseDeDatos
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -73,6 +76,31 @@ namespace ArchivosBaseDeDatos
             {
                 routes.MapHub<MainHub>("/mainHub");
             });
+            CreateRoles(serviceProvider).Wait();
+        }
+
+        private async Task CreateRoles(IServiceProvider serviceProvider)
+        {
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<GestorUser>>();
+            string[] roleNames = { SystemRoles.Administrator };
+            IdentityResult roleResult;
+
+            foreach (var roleName in roleNames)
+            {
+                var roleExist = await roleManager.RoleExistsAsync(roleName);
+                if (!roleExist)
+                {
+                    roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
+                }
+            }
+
+            var _user = await userManager.FindByEmailAsync("user@mail.com");
+
+            if (_user != null)
+            {
+                await userManager.AddToRoleAsync(_user, SystemRoles.Administrator);
+            }
         }
     }
 }

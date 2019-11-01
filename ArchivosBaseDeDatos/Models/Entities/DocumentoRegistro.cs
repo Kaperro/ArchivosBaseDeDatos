@@ -13,6 +13,7 @@ namespace ArchivosBaseDeDatos.Models.Entities
         public DateTime TiempoInicio { get; set; }
         public DateTime TiempoFin { get; set; }
         public string Usuario { get; set; }
+        public string Destinatario { get; set; }
 
         public virtual Documento DocumentoNavigation { get; set; }
     }

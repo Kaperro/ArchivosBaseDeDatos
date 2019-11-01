@@ -1,9 +1,11 @@
 ﻿using ArchivosBaseDeDatos.Areas.Identity.Data;
 using ArchivosBaseDeDatos.Models;
+using ArchivosBaseDeDatos.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace ArchivosBaseDeDatos.Controllers
 {
-    //[Authorize(Roles = "Administrador")]
+    [Authorize(Roles = SystemRoles.Administrator)]
     public class RolesController : Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -26,7 +28,7 @@ namespace ArchivosBaseDeDatos.Controllers
         // GET: Roles
         public async Task<ActionResult> Index()
         {
-            var assignableRoles = _roleManager.Roles.ToList();
+            var assignableRoles = await _roleManager.Roles.ToListAsync();
             return View(assignableRoles);
         }
 
@@ -50,8 +52,7 @@ namespace ArchivosBaseDeDatos.Controllers
         // GET: Roles/Assign
         public async Task<ActionResult> Assign()
         {
-            var assignableRoles = _roleManager.Roles.ToList();
-            ViewData["Name"] = new SelectList(assignableRoles, "Name", "Name");
+            ViewData["Name"] = new SelectList(_roleManager.Roles, "Name", "Name");
             ViewData["UserName"] = new SelectList(_userManager.Users, "UserName", "UserName");
             return View(new RoleModel());
         }

@@ -10,5 +10,6 @@ namespace ArchivosBaseDeDatos.Models.Entities
         public long Id { get; set; }
         public string Nombre { get; set; }
         public string Departamento { get; set; }
+        public string Destinatario { get; set; }
     }
 }

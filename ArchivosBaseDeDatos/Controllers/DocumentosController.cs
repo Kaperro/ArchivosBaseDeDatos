@@ -14,9 +14,12 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using ArchivosBaseDeDatos.Models;
 using Microsoft.AspNetCore.Identity;
 using ArchivosBaseDeDatos.Areas.Identity.Data;
+using Microsoft.AspNetCore.Authorization;
+using ArchivosBaseDeDatos.Utils;
 
 namespace ArchivosBaseDeDatos.Controllers
 {
+    [Authorize]
     public class DocumentosController : Controller
     {
         private readonly GestorContext _context;
@@ -41,6 +44,12 @@ namespace ArchivosBaseDeDatos.Controllers
             var user = await _userManager.GetUserAsync(User);
             var role = await _userManager.GetRolesAsync(user);
 
+            if(role.Count == 0)
+            {
+                ViewData["Message"] = $@"Usted no pertenece a ningun departamento.";
+                return View("Info");
+            }
+
             var data = await _context.Documento
                 .Select(d => new Documento
                 {
@@ -48,10 +57,12 @@ namespace ArchivosBaseDeDatos.Controllers
                     Nombre = d.Nombre,
                     ArchivoNombre = d.ArchivoNombre,
                     Departamento = d.Departamento,
+                    Destinatario = d.Destinatario,
+                    Usuario = d.Usuario,
                     FechaCreado = d.FechaCreado,
                     FechaRevisado = d.FechaRevisado,
                 })
-                .Where(d => d.Departamento == role.FirstOrDefault())
+                .Where(d => d.Departamento == role.FirstOrDefault() || d.Destinatario == User.Identity.Name)
                 .ToListAsync();
             ViewData["Departamento"] = role.FirstOrDefault();
 
@@ -77,9 +88,16 @@ namespace ArchivosBaseDeDatos.Controllers
         }
 
         // GET: Documentos/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["Roles"] = new SelectList(_roleManager.Roles, "Name", "Name");
+            var roles = new SelectList(await _roleManager.Roles.Where(r => r.Name != SystemRoles.Administrator).ToListAsync(),"Name","Name").ToList();
+            roles.Insert(0, new SelectListItem("Seleccione", "", true, true));
+            ViewData["Roles"] = roles;
+            var users = new SelectList(await _userManager.Users.Where(r => r.UserName != User.Identity.Name).ToListAsync(),"UserName", "UserName").ToList();
+            users.Insert(0, new SelectListItem("Seleccione", "", true, true));
+            ViewData["Users"] = users;
+            //ViewData["Roles"] = new SelectList(_roleManager.Roles.Where(r => r.Name != SystemRoles.Administrator), "Name", "Name");
+            //ViewData["Users"] = new SelectList(_userManager.Users.Where(r => r.UserName != User.Identity.Name), "UserName", "UserName");
             return View();
         }
 
@@ -110,6 +128,12 @@ namespace ArchivosBaseDeDatos.Controllers
                 await _hubContext.Clients.All.SendAsync("CheckGroupTray");
                 return RedirectToAction(nameof(Index));
             }
+            var roles = new SelectList(await _roleManager.Roles.Where(r => r.Name != SystemRoles.Administrator).ToListAsync(), "Name", "Name").ToList();
+            roles.Insert(0, new SelectListItem("Seleccione", "", true, true));
+            ViewData["Roles"] = roles;
+            var users = new SelectList(await _userManager.Users.Where(r => r.UserName != User.Identity.Name).ToListAsync(), "UserName", "UserName").ToList();
+            users.Insert(0, new SelectListItem("Seleccione", "", true, true));
+            ViewData["Users"] = users;
             return View(documento);
         }
 
@@ -244,6 +268,12 @@ namespace ArchivosBaseDeDatos.Controllers
             var user = await _userManager.GetUserAsync(User);
             var role = await _userManager.GetRolesAsync(user);
 
+            if (role.Count == 0)
+            {
+                ViewData["Message"] = $@"Usted no pertenece a ningun departamento.";
+                return View("Info");
+            }
+
             var data = await _context.Documento
                 .Select(d => new Documento
                 {
@@ -251,10 +281,12 @@ namespace ArchivosBaseDeDatos.Controllers
                     Nombre = d.Nombre,
                     ArchivoNombre = d.ArchivoNombre,
                     Departamento = d.Departamento,
+                    Destinatario = d.Destinatario,
+                    Usuario = d.Usuario,
                     FechaCreado = d.FechaCreado,
                     FechaRevisado = d.FechaRevisado,
                 })
-                .Where(d => d.Departamento == role.FirstOrDefault())
+                .Where(d => d.Departamento == role.FirstOrDefault() || d.Destinatario == User.Identity.Name)
                 .ToListAsync();
             return new PartialViewResult()
             {
@@ -275,11 +307,16 @@ namespace ArchivosBaseDeDatos.Controllers
                     Id = d.Id,
                     Nombre = d.Nombre,
                     Departamento = d.Departamento,
+                    Usuario = d.Usuario,
                 })
                 .Where(d => d.Id == id)
                 .FirstOrDefaultAsync();
-            ViewData["Roles"] = new SelectList(_roleManager.Roles.Where(x => x.Name != documento.Departamento), "Name", "Name");
-            var model = new DocumentoTransferViewModel
+            var roles = new SelectList(await _roleManager.Roles.Where(r => r.Name != SystemRoles.Administrator).ToListAsync(), "Name", "Name").ToList();
+            roles.Insert(0, new SelectListItem("Seleccione", "", true, true));
+            ViewData["Roles"] = roles;
+            var users = new SelectList(await _userManager.Users.Where(r => r.UserName != User.Identity.Name).ToListAsync(), "UserName", "UserName").ToList();
+            users.Insert(0, new SelectListItem("Seleccione", "", true, true));
+            ViewData["Users"] = users; var model = new DocumentoTransferViewModel
             { Id = documento.Id, Departamento = documento.Departamento, Nombre = documento.Nombre };
             return View(model);
         }
@@ -299,18 +336,27 @@ namespace ArchivosBaseDeDatos.Controllers
                     {
                         Documento = documentoInDb.Id,
                         Departamento = documentoInDb.Departamento,
+                        Destinatario = documentoInDb.Destinatario,
                         TiempoInicio = documentoInDb.FechaCreado,
                         TiempoFin = DateTime.Now,
                         Usuario = User.Identity.Name
                     };
                 documentoInDb.Departamento = documento.Departamento;
                 _context.Entry(documentoInDb).Property(x => x.Departamento).IsModified = true;
+                documentoInDb.Destinatario = documento.Destinatario;
+                _context.Entry(documentoInDb).Property(x => x.Destinatario).IsModified = true;
                 await _context.SaveChangesAsync();
                 _context.Add(documentoRegistro);
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("CheckGroupTray");
                 return RedirectToAction(nameof(Index));
             }
+            var roles = new SelectList(await _roleManager.Roles.Where(r => r.Name != SystemRoles.Administrator).ToListAsync(), "Name", "Name").ToList();
+            roles.Insert(0, new SelectListItem("Seleccione", "", true, true));
+            ViewData["Roles"] = roles;
+            var users = new SelectList(await _userManager.Users.Where(r => r.UserName != User.Identity.Name).ToListAsync(), "UserName", "UserName").ToList();
+            users.Insert(0, new SelectListItem("Seleccione", "", true, true));
+            ViewData["Users"] = users;
             return View(documento);
         }
 

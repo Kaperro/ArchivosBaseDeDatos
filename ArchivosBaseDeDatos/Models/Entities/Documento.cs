@@ -24,6 +24,7 @@ namespace ArchivosBaseDeDatos.Models.Entities
         public DateTime FechaCreado { get; set; }
         public DateTime FechaRevisado { get; set; }
         public string Usuario { get; set; }
+        public string Destinatario { get; set; }
 
         public virtual ICollection<DocumentoRegistro> DocumentoRegistro { get; set; }
     }

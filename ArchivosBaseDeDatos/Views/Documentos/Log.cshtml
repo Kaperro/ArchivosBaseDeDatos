@@ -21,9 +21,11 @@
                         @Html.DisplayNameFor(model => model.TiempoFin)
                     </th>
                     <th>
-                        @Html.DisplayNameFor(model => model.Usuario)
+                        Dueño
                     </th>
-                    <th></th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Destinatario)
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -41,6 +43,9 @@
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Usuario)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Destinatario)
                     </td>
                 </tr>
                 }

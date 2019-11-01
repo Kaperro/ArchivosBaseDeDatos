@@ -4,14 +4,16 @@ using ArchivosBaseDeDatos.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ArchivosBaseDeDatos.Migrations
 {
     [DbContext(typeof(GestorContext))]
-    partial class GestorContextModelSnapshot : ModelSnapshot
+    [Migration("20191101025711_AddedAddressee")]
+    partial class AddedAddressee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -83,9 +85,11 @@ namespace ArchivosBaseDeDatos.Migrations
                         .IsRequired()
                         .HasMaxLength(150);
 
-                    b.Property<string>("Departamento");
+                    b.Property<string>("Departamento")
+                        .IsRequired();
 
                     b.Property<string>("Destinatario")
+                        .IsRequired()
                         .HasMaxLength(256);
 
                     b.Property<DateTime>("FechaCreado");
@@ -112,9 +116,7 @@ namespace ArchivosBaseDeDatos.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Departamento")
-                        .HasMaxLength(256);
-
-                    b.Property<string>("Destinatario")
+                        .IsRequired()
                         .HasMaxLength(256);
 
                     b.Property<long>("Documento");
